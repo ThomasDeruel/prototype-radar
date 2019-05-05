@@ -1,24 +1,42 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, {useState, useEffect} from 'react';
+import Radar from './components/Radar';
+// functions
+import {fetchAll, fusionDataById, SuperFilter} from './utils/functions/data';
+
 import './App.css';
 
-function App() {
+const App = () => {
+  // general state
+  const [pilotes,setPilotes] = useState([]);
+  
+  useEffect(()=>{
+  // to use "async" in hooks
+  // make sure you use a async function, if not it's doesn't work
+  const fetchData = async() => {
+    //fetchAll data
+    const urls = ["data/results.json","data/drivers.json","data/races.json"];
+
+    const allData = await fetchAll(urls);
+    
+    const driverdata_segment = await fusionDataById(allData[0],allData[1], "driverId");
+ 
+      const driversData = 
+        SuperFilter(
+          fusionDataById(driverdata_segment,allData[2], "raceId"),
+          "year",
+          "2007");
+
+      const pilote_1 = await driversData[0];
+      const pilote_2 = await driversData[1];
+
+      setPilotes([pilote_1,pilote_2]);
+    };
+    fetchData();
+  }, [pilotes])
+  
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <Radar data={pilotes}/>
     </div>
   );
 }
